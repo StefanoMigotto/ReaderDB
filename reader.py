@@ -5,6 +5,7 @@ import os
 import json
 from tabulate import tabulate
 import logging
+import numpy as np
 init()
 
 
@@ -29,77 +30,97 @@ def LeggiItems(json):
     print(tabulate(table, headers=["Nome Oggetto DB","Quantità Oggetto","Nome Visualizzato", "Qualità o Durabilità"]))
             
 print("Connessione con il database locale in corso...")
-try:
-    get_config = open("config.json", "r")
-    config = json.loads(get_config.read())
-    database = mysql.connector.connect(
-        host=config["host"],
-        user=config["username"],
-        password=config["password"],
-        database=config["database"]
-    )
 
-    cc = database.cursor()
-
-
-    while True:
-        print("1 - Ricerca Persona [Identifier]")
-        print("2 - Visualizza tutti gli utenti e relative informazioni")
-        scelta = input("Inserisci Numero Selezionato: ")
-
-        if scelta == "clear":
-            os.system("cls")
-
-        if(scelta == "1"):
-            ##### RICERCA #####
-            while True:
-                persona = input("-[ ")
-                #prende la le info base della persona
-                if persona == "clear":
-                    os.system("cls")
-                if persona == "exit":
-                    break
-                cc.execute("select * from users")
-                utenti = cc.fetchall()
-                utenti_count_for = 1
-                for utenti in utenti:
-                    if utenti[1] == persona:
-                        riquadra("Informazioni Generali")
-                        print("ID DATABASE: " + str(utenti[0]))
-                        print("Identifier: " + str(utenti[1]))
-                        print("Nome RP: " + str(utenti[9]) + str(utenti[10]))
-                        print("Gruppo: " + str(utenti[3]))
-                        print("Stato Lavorativo: " + str(utenti[5]))
-                        print("Nato il: " + str(utenti[11]))
-                        print("Sesso: " + str(utenti[12]))
-                        print("Saldo: " + str(utenti[2]))
-
-                        riquadra("Informazioni Generali")
-                    else:
-                        utenti_count_for = utenti_count_for+1
-
-                #prende l'inventario
-                cc.execute("select identifier from inventories")
-                identifier = cc.fetchall()
-                counter_loop = 0
-                for identifier in identifier:
-                    if identifier[0] == persona:
-                        cc.execute("select data from inventories")
-                        data = cc.fetchall()
-                        riquadra(Back.CYAN + "Inventario" + Back.WHITE)
-                        #print("Data: " + data[counter_loop][0])
-                        LeggiItems(json.loads(data[counter_loop][0]))
-                        riquadra(Back.CYAN + "Inventario" + Back.WHITE)
-                    else:
-                        counter_loop = counter_loop+1
-
-
-        #visualizzazione globale
-        if(scelta == "2"):
-
-            riquadra(Back.RED + "Tutti i Giocatori" + Back.WHITE)
+get_config = open("config.json", "r")
+config = json.loads(get_config.read())
+database = mysql.connector.connect(
+    host=config["host"],
+    user=config["username"],
+    password=config["password"],
+    database=config["database"]
+)
+cc = database.cursor()
+while True:
+    print("1 - Ricerca Persona [Identifier]")
+    print("2 - Visualizza tutti gli utenti e relative informazioni")
+    scelta = input("Inserisci Numero Selezionato: ")
+    if scelta == "clear":
+        os.system("cls")
+    if(scelta == "1"):
+        ##### RICERCA #####
+        while True:
+            persona = input("-[ ")
+            #prende la le info base della persona
+            if persona == "clear":
+                os.system("cls")
+            if persona == "exit":
+                break
             cc.execute("select * from users")
             utenti = cc.fetchall()
+            utenti_count_for = 1
+            for utenti in utenti:
+                if utenti[1] == persona:
+                    riquadra("Informazioni Generali")
+                    print("ID DATABASE: " + str(utenti[0]))
+                    print("Identifier: " + str(utenti[1]))
+                    print("Nome RP: " + str(utenti[9]) + str(utenti[10]))
+                    print("Gruppo: " + str(utenti[3]))
+                    print("Stato Lavorativo: " + str(utenti[5]))
+                    print("Nato il: " + str(utenti[11]))
+                    print("Sesso: " + str(utenti[12]))
+                    print("Saldo: " + str(utenti[2]))
+                    riquadra("Informazioni Generali")
+                else:
+                    utenti_count_for = utenti_count_for+1
+            #prende l'inventario
+            cc.execute("select identifier from inventories")
+            identifier = cc.fetchall()
+            counter_loop = 0
+            for identifier in identifier:
+                if identifier[0] == persona:
+                    cc.execute("select data from inventories")
+                    data = cc.fetchall()
+                    riquadra(Back.CYAN + "Inventario" + Back.WHITE)
+                    #print("Data: " + data[counter_loop][0])
+                    LeggiItems(json.loads(data[counter_loop][0]))
+                    riquadra(Back.CYAN + "Inventario" + Back.WHITE)
+                else:
+                    counter_loop = counter_loop+1
+    #visualizzazione globale
+    if(scelta == "2"):
+        print("1 - Visualizza utenti con il saldo crescente")
+        print("2 - Visualizza utenti con il saldo decrescente")
+        print("3 - Visualizza utenti con il saldo come da database")
+        ord = input("Inserisci Scelta: ")
+        if(ord == "1"):
+            cc.execute("select accounts from users")
+            utenti = cc.fetchall()
+            cc.execute("select * from users")
+            user = cc.fetchall()
+            ultimo_risultato_max_trovato = 0
+            array_valori_trovati = []
+            array_utenti_trovati = []
+            array_dump_utenti = []
+            #Legge e trova chi ha più soldi nel conto
+            for utente in range(len(utenti)):
+                account = json.loads(utenti[utente][0])
+                array_dump_utenti.append(json.dumps({"money": account["money"], "n_c": utente, "id_db": user[utente][0]}))
+                #array_valori_trovati.append(account["money"])
+                #array_utenti_trovati.append(str(user[utente][0]))
+                #trova l'user con più soldi
+                if(account["money"] > ultimo_risultato_max_trovato):
+                    ultimo_risultato_max_trovato = account["money"]
+                    user_risultato_max_trovato = utente
+            #legge tutti gli user e li stampa in ordine di chi ha più soldi
+            array_np_valori = np.sort(array_valori_trovati)[::-1]
+            array_dump_utenti.sort(key=lambda x: x[1])    ##---
+            riquadra(Back.RED + "Tutti i Giocatori - MODE 1" + Back.WHITE)
+            
+            riquadra(Back.RED + "Tutti i Giocatori - MODE 1" + Back.WHITE)
+        if(ord == "3"):
+            cc.execute("select * from users")
+            utenti = cc.fetchall()
+            riquadra(Back.RED + "Tutti i Giocatori - MODE 3" + Back.WHITE)
             persona_count = 0
             table = []
             max_persone = len(utenti)
@@ -114,14 +135,5 @@ try:
                 str(data.get("bank")),
                 str(data.get("black_money"))])
             print(tabulate(table, headers=["Identifier","Nome","Cognome","Lavoro","Soldi", "Banca", "Soldi Sporchi"]))
-            riquadra(Back.RED + "Tutti i Giocatori" + Back.WHITE)
-except Exception as Argument:
-    f = open("log.txt", "a")
-    f.write(str(Argument))
-    f.close()
-            
-
-
-    
-
-
+            riquadra(Back.RED + "Tutti i Giocatori - MODE 3" + Back.WHITE)
+        
