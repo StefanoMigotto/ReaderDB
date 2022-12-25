@@ -6,7 +6,6 @@ import json
 from tabulate import tabulate
 init()
 
-#os.system("mode con cols=200 lines=50")
 
 def riquadra(title):
     print(" ")
@@ -28,9 +27,6 @@ def LeggiItems(json):
             )
     print(tabulate(table, headers=["Nome Oggetto DB","Quantità Oggetto","Nome Visualizzato", "Qualità o Durabilità"]))
             
-
-        
-
 print("Connessione con il database locale in corso...")
 
 get_config = open("config.json", "r")
@@ -118,7 +114,6 @@ while True:
         print(tabulate(table, headers=["Identifier","Nome","Cognome","Lavoro","Soldi", "Banca", "Soldi Sporchi"]))
         riquadra(Back.RED + "Tutti i Giocatori" + Back.WHITE)
            
-os.system('mode horizontalSizeInNumber or horizontalSizeInNumber_setToZero and verticalSizeInNumber')
 
 
     
