@@ -6,6 +6,7 @@ import json
 from tabulate import tabulate
 import logging
 import numpy as np
+import pprint
 init()
 
 
@@ -98,22 +99,23 @@ while True:
             cc.execute("select * from users")
             user = cc.fetchall()
             ultimo_risultato_max_trovato = 0
-            array_valori_trovati = []
-            array_utenti_trovati = []
             array_dump_utenti = []
             #Legge e trova chi ha più soldi nel conto
+            
             for utente in range(len(utenti)):
                 account = json.loads(utenti[utente][0])
-                array_dump_utenti.append(json.dumps({"money": account["money"], "n_c": utente, "id_db": user[utente][0]}))
-                #array_valori_trovati.append(account["money"])
-                #array_utenti_trovati.append(str(user[utente][0]))
-                #trova l'user con più soldi
-                if(account["money"] > ultimo_risultato_max_trovato):
-                    ultimo_risultato_max_trovato = account["money"]
-                    user_risultato_max_trovato = utente
-            #legge tutti gli user e li stampa in ordine di chi ha più soldi
-            array_np_valori = np.sort(array_valori_trovati)[::-1]
-            array_dump_utenti.sort(key=lambda x: x[1])    ##---
+                #array_dump_utenti.append(json.dumps({"money": account["money"], "n_c": utente, "id_db": user[utente][0]}))
+                with open("internal_.json", "a") as outfile:
+                    outfile.write(json.dumps({"money": account["money"], "n_c": utente, "id_db": user[utente][0]}))
+                #print(json.dumps({"money": account["money"], "n_c": utente, "id_db": user[utente][0]}))
+
+                
+                
+            #pprint.pprint((array_dump_utenti))
+            
+
+            #dump_utenti_final = sorted(array_dump_utenti, key=lambda k: k["money"], reverse=True)
+            #pprint.pprint((dump_utenti_final))
             riquadra(Back.RED + "Tutti i Giocatori - MODE 1" + Back.WHITE)
             
             riquadra(Back.RED + "Tutti i Giocatori - MODE 1" + Back.WHITE)
